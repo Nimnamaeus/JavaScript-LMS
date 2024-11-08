@@ -1,6 +1,6 @@
-# Simple JavaScript-Based Learning Management System 📚
+# Simple Learning Management System 📚
 
-This is a simple Learning Management System (LMS) project built using JavaScript. It enables administrators to create and manage courses and assign them to students. Students can log in to view the courses assigned to them. All data is stored in the browser's local storage for simplicity. 🖥️📊
+This is a Learning Management System (LMS) project built using JavaScript, Node.js, and MongoDB. It enables administrators to create and manage courses and assign them to students. Students can log in to view their assigned courses. 🖥️📊
 
 ## Features 🌟
 
@@ -13,24 +13,45 @@ This is a simple Learning Management System (LMS) project built using JavaScript
     - Students can log in to their accounts. 🔐
     - View the courses assigned to them by the administrator. 👀
 
-- **Local Storage:** 📦 All data, including user accounts, courses, and assignments, is stored locally in the browser's local storage for a seamless experience. 💾
+- **MongoDB Integration:** 📦 All data is stored in MongoDB, providing persistent storage and scalability. 💾
 
 ## Getting Started 🚀
 
 ### Prerequisites 📋
 
+- Node.js and npm installed
+- MongoDB installed and running
 - A modern web browser with JavaScript enabled. 🌐
 
 ### Installation 📦
 
-1. Clone or download this repository to your local machine. 📂
+1. Clone the repository:
 
 ```bash
-git clone https://github.com/riteshporiya/JavaScript-LMS.git
+git clone https://github.com/yourusername/lms-project.git
 ```
 
-2. Open the project directory in your preferred code editor.
-3. Launch the `index.html` file in your browser.
+2. Install dependencies:
+
+```bash
+cd lms-project
+npm install
+```
+
+3. Create a .env file in the root directory with:
+
+```bash
+MONGODB_URI=your_mongodb_connection_string
+PORT=5000
+```
+
+4. Start the server:
+
+```bash
+npm start
+```
+
+5. Open `index.html` in your browser
 
 ## 📝Usage
 1. Admin Panel 👩‍💼👨‍💼:
