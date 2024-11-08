@@ -18,6 +18,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/lms_db')
 app.use('/api/users', require('./routes/users'));
 app.use('/api/courses', require('./routes/courses'));
 app.use('/api/assign-courses', require('./routes/assignCourses'));
+app.use('/api/activities', require('./routes/activities'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

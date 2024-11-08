@@ -100,7 +100,7 @@ async function displayCourses() {
     courses.forEach(course => {
       displayCoursesId.innerHTML += `
         <div class="col-4">
-          <div class="card">
+          <div class="card" style="cursor: pointer" onclick="navigateToActivities('${course._id}')">
             <img src="${course.courseImage}" class="card-img-top" alt="image" />
             <hr>
             <div class="card-body">
@@ -118,6 +118,10 @@ async function displayCourses() {
         Failed to load courses. Please try again later.
       </div>`;
   }
+}
+
+function navigateToActivities(courseId) {
+  window.location.href = `activities.html?courseId=${courseId}`;
 }
 
 async function addCourse(studentId, courseId) {
