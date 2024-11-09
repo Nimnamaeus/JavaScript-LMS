@@ -21,17 +21,23 @@ router.post('/login', async (req, res) => {
 // Register route
 router.post('/register', async (req, res) => {
   try {
-    const { userName, password, type } = req.body;
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ userName });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Username already exists' });
+    const { userName, password, type, idNumber } = req.body;
+
+    // Only check for existing ID number if registering a student
+    if (type === 1) {
+      const existingUser = await User.findOne({ idNumber });
+      if (existingUser) {
+        return res.status(400).json({ message: 'ID number already exists' });
+      }
     }
 
-    const user = new User({ userName, password, type });
+    const userData = { userName, password, type };
+    if (type === 1) {
+      userData.idNumber = idNumber;
+    }
+
+    const user = new User(userData);
     await user.save();
-    
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -73,10 +73,21 @@ async function loadActivities() {
                                         <h5 class="card-title">${activity.title}</h5>
                                         <p class="card-text">
                                             <span class="badge bg-secondary">${activity.type}</span>
+                                            <span class="badge bg-info ms-2">
+                                                Deadline: ${new Date(activity.deadline).toLocaleString()}
+                                            </span>
                                         </p>
-                                        <a href="${activity.content}" target="_blank" class="btn btn-primary">
-                                            ${activity.type === 'file' ? 'Start Activity' : 'Watch Video'}
-                                        </a>
+                                        <div class="d-flex gap-2">
+                                            <a href="${activity.content}" target="_blank" class="btn btn-primary">
+                                                ${activity.type === 'file' ? 'Start Activity' : 'Watch Video'}
+                                            </a>
+                                            ${activity.type === 'file' ? `
+                                                <button class="btn btn-info" onclick="viewSubmissions('${activity._id}')">
+                                                    <i class="bi bi-eye"></i> View Submissions
+                                                </button>
+                                                <div id="submissions-${activity._id}" class="mt-2"></div>
+                                            ` : ''}
+                                        </div>
                                     </div>
                                     <div>
                                         <button class="btn btn-sm btn-warning me-2" onclick="editActivity('${activity._id}')">
@@ -124,6 +135,7 @@ document.getElementById('btnAddActivity').addEventListener('click', async () => 
                 title: form.title.value,
                 type: form.type.value,
                 content: form.content.value,
+                deadline: new Date(form.deadline.value).toISOString(),
                 sequence: isEdit ? parseInt(btn.dataset.sequence) : undefined
             })
         });
@@ -184,14 +196,71 @@ async function editActivity(activityId) {
         form.title.value = activity.title;
         form.type.value = activity.type;
         form.content.value = activity.content;
+        form.deadline.value = new Date(activity.deadline).toISOString().slice(0, 16);
         
-        // Change button text and store activity ID
+        // Change button text and store activity ID and sequence
         const btn = document.getElementById('btnAddActivity');
         btn.textContent = 'Update Activity';
         btn.dataset.activityId = activityId;
         btn.dataset.sequence = activity.sequence;
+        
     } catch (error) {
         console.error('Error:', error);
         showError('Failed to load activity details');
+    }
+}
+
+async function viewSubmissions(activityId) {
+    try {
+        const response = await fetch(`${API_URL}/submissions/activity/${activityId}`);
+        if (!response.ok) throw new Error('Failed to fetch submissions');
+
+        const submissions = await response.json();
+        console.log('Received submissions:', submissions);
+        
+        const modalBody = document.getElementById('submissionsModalBody');
+        
+        if (submissions.length === 0) {
+            modalBody.innerHTML = '<div class="alert alert-info">No submissions yet.</div>';
+            return;
+        }
+
+        modalBody.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>ID Number</th>
+                            <th>Submission Link</th>
+                            <th>Submitted At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${submissions.map(sub => {
+                            const studentName = sub.studentId?.userName || 'N/A';
+                            const idNumber = sub.studentId?.idNumber || 'N/A';
+                            return `
+                                <tr>
+                                    <td>${studentName}</td>
+                                    <td>${idNumber}</td>
+                                    <td>
+                                        <a href="${sub.submissionUrl}" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-link"></i> View Submission
+                                        </a>
+                                    </td>
+                                    <td>${new Date(sub.submittedAt).toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+
+        const submissionsModal = new bootstrap.Modal(document.getElementById('submissionsModal'));
+        submissionsModal.show();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to load submissions');
     }
 } 

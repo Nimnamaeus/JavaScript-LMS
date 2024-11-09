@@ -9,6 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Add this after your middleware setup
+app.use('/uploads', express.static('uploads'));
+
+// Add the submissions route
+app.use('/api/submissions', require('./routes/submissions'));
+
 // Connect to MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/lms_db')
   .then(() => console.log('Connected to MongoDB'))

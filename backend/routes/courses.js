@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Course = require('../models/Course');
+const Activity = require('../models/Activity');
+const AssignCourse = require('../models/AssignCourse');
 
 // Create a new course
 router.post('/', async (req, res) => {
   try {
-    const { courseName, courseType, courseImage, courseDescription } = req.body;
+    const { courseName, courseType, courseImage, courseDescription, adminId } = req.body;
     
-    // Check if course already exists
+    // Check if course already exists for this admin
     const existingCourse = await Course.findOne({ 
       courseName: { $regex: new RegExp(courseName, 'i') },
-      courseType: { $regex: new RegExp(courseType, 'i') }
+      courseType: { $regex: new RegExp(courseType, 'i') },
+      adminId: adminId
     });
     
     if (existingCourse) {
@@ -21,7 +24,8 @@ router.post('/', async (req, res) => {
       courseName,
       courseType,
       courseImage,
-      courseDescription
+      courseDescription,
+      adminId
     });
 
     await course.save();
@@ -34,7 +38,8 @@ router.post('/', async (req, res) => {
 // Get all courses
 router.get('/', async (req, res) => {
   try {
-    const courses = await Course.find();
+    const { adminId } = req.query;
+    const courses = await Course.find({ adminId });
     res.json(courses);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -44,8 +49,19 @@ router.get('/', async (req, res) => {
 // Delete a course
 router.delete('/:id', async (req, res) => {
   try {
+    // Delete all activities associated with this course
+    await Activity.deleteMany({ courseId: req.params.id });
+    
+    // Delete the course
     await Course.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Course deleted successfully' });
+    
+    // Remove the course from all student assignments
+    await AssignCourse.updateMany(
+      { courses: req.params.id },
+      { $pull: { courses: req.params.id } }
+    );
+    
+    res.json({ message: 'Course and associated data deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

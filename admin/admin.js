@@ -7,14 +7,23 @@ async function checkLogin() {
   let loginUser = JSON.parse(sessionStorage.getItem("loginUser"));
   if (loginUser) {
     if (loginUser.type != admin) {
-      location.href = "../index.html";
+      location.href = "../auth.html";
     } else {
       document.getElementById("loginUserName").innerText =
         "Welcome, " + loginUser.userName;
       await Promise.all([getStudents(), displayCourses()]);
+      
+      // Check if returning from activities page
+      const hash = window.location.hash;
+      if (hash === '#displayCourses') {
+        // Show the display courses tab
+        const tabEl = document.querySelector('a[href="#displayCourses"]');
+        const tab = new bootstrap.Tab(tabEl);
+        tab.show();
+      }
     }
   } else {
-    location.href = "../index.html";
+    location.href = "../auth.html";
   }
 }
 
@@ -25,9 +34,10 @@ function logout() {
 
 async function getStudents() {
   try {
+    const loginUser = JSON.parse(sessionStorage.getItem("loginUser"));
     const [studentsResponse, coursesResponse] = await Promise.all([
       fetch(`${API_URL}/users/students`),
-      fetch(`${API_URL}/courses`)
+      fetch(`${API_URL}/courses?adminId=${loginUser._id}`)
     ]);
 
     const students = await studentsResponse.json();
@@ -91,26 +101,35 @@ async function getStudents() {
 
 async function displayCourses() {
   try {
-    const response = await fetch(`${API_URL}/courses`);
+    const loginUser = JSON.parse(sessionStorage.getItem("loginUser"));
+    const response = await fetch(`${API_URL}/courses?adminId=${loginUser._id}`);
     const courses = await response.json();
     
     let displayCoursesId = document.getElementById("displayCourses");
-    displayCoursesId.innerHTML = "";
-    
-    courses.forEach(course => {
-      displayCoursesId.innerHTML += `
-        <div class="col-4">
-          <div class="card" style="cursor: pointer" onclick="navigateToActivities('${course._id}')">
-            <img src="${course.courseImage}" class="card-img-top" alt="image" />
-            <hr>
-            <div class="card-body">
-              <h5 class="card-title">${course.courseName}</h5>
-              <span>(${course.courseType})</span>
-              <p class="card-text">${course.courseDescription}</p>
+    displayCoursesId.innerHTML = `
+      <div class="container">
+        <div class="row">
+          ${courses.map(course => `
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <img src="${course.courseImage}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="image" />
+                <hr class="m-0">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">${course.courseName}</h5>
+                  <span class="mb-2">(${course.courseType})</span>
+                  <p class="card-text flex-grow-1">${course.courseDescription}</p>
+                  <div class="d-flex justify-content-between mt-auto">
+                    <button class="btn btn-primary" onclick="navigateToActivities('${course._id}')">View Activities</button>
+                    <button class="btn btn-danger" onclick="deleteCourse('${course._id}')">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>`;
-    });
+          `).join('')}
+        </div>
+      </div>`;
   } catch (error) {
     console.error('Error:', error);
     document.getElementById("displayCourses").innerHTML = `
@@ -121,6 +140,7 @@ async function displayCourses() {
 }
 
 function navigateToActivities(courseId) {
+  sessionStorage.setItem('lastTab', 'displayCourses');
   window.location.href = `activities.html?courseId=${courseId}`;
 }
 
@@ -158,6 +178,7 @@ async function removeCourse(studentId, courseId) {
 
 // Add event listener for course creation
 document.getElementById('btnCourse').addEventListener('click', async (event) => {
+  const loginUser = JSON.parse(sessionStorage.getItem("loginUser"));
   let courseName = document.forms.course.courseName.value;
   let courseType = document.forms.course.courseType.value;
   let courseDescription = document.forms.course.courseDescription.value;
@@ -180,7 +201,8 @@ document.getElementById('btnCourse').addEventListener('click', async (event) => 
         courseName,
         courseType,
         courseImage,
-        courseDescription
+        courseDescription,
+        adminId: loginUser._id
       })
     });
 
@@ -203,3 +225,23 @@ document.getElementById('btnCourse').addEventListener('click', async (event) => 
     alert('Failed to create course. Please try again.');
   }
 });
+
+async function deleteCourse(courseId) {
+  if (!confirm('Are you sure you want to delete this course? This will also delete all associated activities.')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/courses/${courseId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) throw new Error('Failed to delete course');
+    
+    // Refresh both the courses display and students list (since assigned courses might have changed)
+    await Promise.all([getStudents(), displayCourses()]);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to delete course. Please try again.');
+  }
+}

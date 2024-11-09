@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <title>Course Activities</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
     <style>
         .timeline {
             position: relative;
@@ -21,7 +23,7 @@
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #ddd;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         }
 
         .timeline-item {
@@ -35,29 +37,54 @@
             left: 0;
             width: 40px;
             height: 40px;
-            background: #007bff;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             border-radius: 50%;
             color: white;
             text-align: center;
             line-height: 40px;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 0.9rem;
             z-index: 1;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+            border: 2px solid white;
         }
 
         .timeline-item .card {
-            margin-left: 10px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .timeline-item .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-card {
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-header {
+            background: rgba(79, 70, 229, 0.1);
+            border-bottom: 1px solid rgba(79, 70, 229, 0.2);
+        }
+
+        .submission-modal .modal-content {
+            border-radius: 15px;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
         }
     </style>
 </head>
 <body onload="checkLogin()">
-    <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <div class="collapse navbar-collapse" id="navbarButtonsExample">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="index.html">Dashboard</a>
-                    </li>
-                </ul>
                 <div class="d-flex align-items-center">
                     <span class="navbar-text text-white" id="loginUserName"></span>
                     <button type="button" onclick="logout()" class="btn btn-link px-3 me-2">Logout</button>
@@ -68,8 +95,9 @@
 
     <div class="container mt-5">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 id="courseName">Course Activities</h3>
+                <button class="btn btn-secondary" onclick="window.location.href='index.html#displayCourses'">Back to Courses</button>
             </div>
             <div class="card-body">
                 <div id="courseDetails" class="mb-4"></div>
@@ -106,6 +134,13 @@
                                     Please enter a valid URL.
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Deadline</label>
+                                <input type="datetime-local" class="form-control" name="deadline" required>
+                                <div class="invalid-feedback">
+                                    Please set a deadline.
+                                </div>
+                            </div>
                             <button type="button" id="btnAddActivity" class="btn btn-primary">Add Activity</button>
                         </form>
                     </div>
@@ -125,5 +160,22 @@
     </div>
 
     <script src="activities.js"></script>
+
+    <!-- Submissions Modal -->
+    <div class="modal fade" id="submissionsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Activity Submissions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="submissionsModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 

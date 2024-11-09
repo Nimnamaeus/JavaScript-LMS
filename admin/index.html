@@ -11,6 +11,32 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
     <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .course-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .course-card img {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        .student-accordion .card-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .student-accordion .card-header:hover {
+            background-color: #f3f4f6;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
 </head>
 
 <body onload="checkLogin()">
@@ -30,7 +56,7 @@
 
                 <div class="d-flex align-items-center">
                     <span class="navbar-text text-white" id="loginUserName">
-
+                        <a class="nav-link" data-bs-toggle="tab" href="#displayCourses">Display Courses</a>
                     </span>
                     <button type="button" onclick="logout()" class="btn btn-link px-3 me-2">
                         Logout
