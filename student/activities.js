@@ -50,9 +50,14 @@ async function loadActivities() {
                   </a>
                   ${activity.type === 'file' ? 
                     (submissions[index] ? `
-                      <a href="${submissions[index].submissionUrl}" target="_blank" class="btn btn-success">
-                        View Submission
-                      </a>
+                      <div class="d-flex gap-2">
+                        <a href="${submissions[index].submissionUrl}" target="_blank" class="btn btn-success">
+                          View Submission
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="cancelSubmission('${activity._id}', '${submissions[index]._id}')">
+                          Cancel Submission
+                        </button>
+                      </div>
                     ` : `
                       <button type="button" class="btn btn-primary" onclick="this.nextElementSibling.classList.remove('d-none')">
                         Submit Work
@@ -64,7 +69,7 @@ async function loadActivities() {
                           <button type="submit" class="btn btn-success">
                             <i class="bi bi-link-45deg"></i> Submit
                           </button>
-                          <button type="button" class="btn btn-secondary" onclick="cancelSubmission(this)">
+                          <button type="button" class="btn btn-secondary" onclick="hideSubmissionForm(this)">
                             Cancel
                           </button>
                         </div>
@@ -117,11 +122,31 @@ async function submitActivity(event, activityId) {
   }
 }
 
-function cancelSubmission(button) {
-  // Get the parent form
+async function cancelSubmission(activityId, submissionId) {
+  if (!confirm('Are you sure you want to cancel this submission? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/submissions/${submissionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to cancel submission');
+    
+    alert('Submission cancelled successfully!');
+    await loadActivities(); // Refresh the view
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to cancel submission. Please try again.');
+  }
+}
+
+function hideSubmissionForm(button) {
   const form = button.closest('form');
-  // Clear the input
   form.submissionUrl.value = '';
-  // Hide the submission form
   form.classList.add('d-none');
 } 

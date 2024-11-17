@@ -44,4 +44,17 @@ router.get('/:activityId/:studentId', async (req, res) => {
   }
 });
 
+// Add this new route to handle submission deletion
+router.delete('/:submissionId', async (req, res) => {
+  try {
+    const submission = await Submission.findByIdAndDelete(req.params.submissionId);
+    if (!submission) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+    res.status(200).json({ message: 'Submission cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

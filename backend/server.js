@@ -26,7 +26,26 @@ app.use('/api/courses', require('./routes/courses'));
 app.use('/api/assign-courses', require('./routes/assignCourses'));
 app.use('/api/activities', require('./routes/activities'));
 
+let server;
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+
+// Graceful shutdown function
+function shutdown() {
+  if (server) {
+    server.close(() => {
+      console.log('Server closed');
+      mongoose.connection.close(false, () => {
+        console.log('MongoDB connection closed');
+        process.exit(0);
+      });
+    });
+  }
+}
+
+// Handle shutdown signals
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 }); 
